@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>文字标签</title>
+    <style>
+        .center {
+            position: absolute;
+            width: 400px;
+            height: 300px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-200px, -150px);
+            padding: 5px;
+        }
+
+        #textArea {
+            width: 100%;
+            padding: 0;
+            margin-left: -1px;
+        }
+
+        .fruit {
+            border: 1px solid #3e8d9a;
+            border-radius: 5px;
+            padding: 0 10px;
+            cursor: pointer;
+        }
+
+        .fruit-selected {
+            background-color: #75c595;
+        }
+    </style>
+</head>
+<body>
+<div class="center">
+    <textarea name="textArea" id="textArea" rows="15"></textarea>
+    <br>
+    <div>
+        <span class="fruit">苹果</span>
+        <span class="fruit">香蕉</span>
+        <span class="fruit">雪梨</span>
+        <span class="fruit">葡萄</span>
+    </div>
+</div>
+
+<script>
+    // 定义分隔符
+    let leftDelimiter = '<', rightDelimiter = '>';
+    let startPos = 0;
+    window.onload = function () {
+        let textAreaNode = document.getElementById("textArea");
+        textAreaNode.addEventListener('click', function () {
+            let text = textAreaNode.value;
+            //火狐/网景 浏览器
+            if (textAreaNode.selectionStart || textAreaNode.selectionStart === 0) {
+                // 得到光标前的位置，也是当前位置
+                startPos = textAreaNode.selectionStart;
+                let currentPos = startPos;
+                // 向前遍历，判断光标是否在标签内
+                while (currentPos-- && currentPos > -1) {
+                    if (text.charAt(currentPos) === leftDelimiter) {
+                        textAreaNode.selectionStart = currentPos;
+                        break;
+                    }
+                    if (text.charAt(currentPos) === rightDelimiter) {
+                        break;
+                    }
+                }
+                // 向后遍历，判断光标是否在标签内
+                currentPos = startPos;  // 重置当前光标位置
+                while (currentPos++ && currentPos < text.length) {
+                    if (text.charAt(currentPos) === rightDelimiter) {
+                        textAreaNode.selectionEnd = currentPos + 1;
+                        break;
+                    }
+                    if (text.charAt(currentPos) === leftDelimiter) {
+                        break;
+                    }
+                }
+                textAreaNode.focus();
+            }
+        });
+
+        let fruitNodes = document.getElementsByClassName('fruit');
+        for (let i = 0, len = fruitNodes.length; i < len; i++) {
+            fruitNodes.item(i).addEventListener('click', function () {
+                let classList = this.classList;
+                let textContent = this.textContent;
+                let currentTextareaContent = textAreaNode.value;
+                // 删除标签
+                let tagContent = leftDelimiter + textContent + rightDelimiter;
+                if (classList.contains('fruit-selected')) {
+                    startPos = currentTextareaContent.indexOf(tagContent);
+                    currentTextareaContent = currentTextareaContent.replace(tagContent, '');
+                } else {
+                    // 添加标签
+                    currentTextareaContent = currentTextareaContent.substring(0, startPos) +
+                        (tagContent) +
+                        currentTextareaContent.substring(startPos);
+                    // 光标向右偏移
+                    startPos += tagContent.length;
+                }
+                textAreaNode.value = currentTextareaContent;
+                classList.toggle('fruit-selected');
+            });
+        }
+    }
+</script>
+</body>
+</html>
